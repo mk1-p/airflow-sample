@@ -80,6 +80,7 @@ fabric.properties
 .idea
 .DS_Store
 venv
+.env
 
 # data
 data
