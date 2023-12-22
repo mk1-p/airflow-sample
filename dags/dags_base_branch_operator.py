@@ -6,6 +6,7 @@ from airflow.operators.branch import BaseBranchOperator
 
 with DAG(
     dag_id='dags_base_branch_operator',
+    tags=['using task'],
     start_date=pendulum.datetime(2023,1,1),
     schedule=None,
     catchup=False

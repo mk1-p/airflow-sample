@@ -8,6 +8,7 @@ from airflow.exceptions import AirflowException
 
 with DAG(
     dag_id='dags_python_with_trigger_rule_eg2',
+    tags=['using task'],
     start_date=pendulum.datetime(2023,1,1),
     schedule=None,
     catchup=False
