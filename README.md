@@ -23,6 +23,16 @@ $ python -m venv [your-local-airflow-root-path]/venv
 $ Scripts\activate.bat
 ```
 
+### Email Operator Setting (SMTP)
+input your smtp information in your docker-compose.yaml
+```
+    AIRFLOW__SMTP__SMTP_HOST: 'smtp.gmail.com'
+    AIRFLOW__SMTP__SMTP_USER: '${your_account}@gmail.com'
+    AIRFLOW__SMTP__SMTP_PASSWORD: '${app_password}'
+    AIRFLOW__SMTP__SMTP_PORT: '587'
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: '{your_account}@gmail.com'
+```
+
 ### .env File
 add python path to plugins dir for local code test
 because aiflow container default path is plugins
