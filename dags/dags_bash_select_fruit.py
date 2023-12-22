@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 with DAG(
     dag_id="dags_bash_select_fruit",
     schedule="10 0 * * 6#1",
+    tags=['basic operator'],
     start_date=pendulum.datetime(2023,1,1, tz="Asia/Seoul"),
     catchup=False
 ) as dag:

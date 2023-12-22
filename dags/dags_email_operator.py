@@ -6,6 +6,7 @@ from airflow.operators.email import EmailOperator
 with DAG(
     dag_id="dags_email_operator",
     schedule="0 8 1 * *",
+    tags=['basic operator'],
     start_date=pendulum.datetime(2023,1,1, tz="Asia/Seoul"),
     catchup=False
 ) as dag:

@@ -9,7 +9,8 @@ with DAG(
     start_date=pendulum.datetime(2023, 1, 1, tz="Asia/Seoul"), # 시작 시간
     catchup=False,                  # start_date 와 현재 시간과의 공백 시간에 대한 스케쥴을 실행할 것인지
     # dagrun_timeout=datetime.timedelta(minutes=60),  # dag가 실행 도중 설정 값을 넘어가는 경우 실패
-    tags=["example", "example2"],   # 단순 tag 기능
+    # tags=["example", "example2"],   # 단순 tag 기능
+    tags=['basic operator'],
     params={"example_key": "example_value"} # task에 공통적으로 들어가는 파라메터 묶음
 
 ) as dag:
