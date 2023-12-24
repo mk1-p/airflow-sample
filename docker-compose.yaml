@@ -45,7 +45,10 @@
 # Feel free to modify this file to suit your needs.
 ---
 version: '3.8'
+# x- : extention fields(각 서비스 항목에 공통 적용될 항목 정의)
 x-airflow-common:
+  # 공통 지정할 항목을 & 를 붙여서 지정
+  #
   &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
@@ -54,6 +57,7 @@ x-airflow-common:
   build: .
   environment:
     &airflow-common-env
+    # 아래 항목들의 변수를 미리 지정하도록 한다.
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
@@ -73,11 +77,11 @@ x-airflow-common:
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # Airflow mail 전송 기능을 사용하기 위한 설정
-#    AIRFLOW__SMTP__SMTP_HOST: 'smtp.gmail.com'
-#    AIRFLOW__SMTP__SMTP_USER: ''
-#    AIRFLOW__SMTP__SMTP_PASSWORD: ''
-#    AIRFLOW__SMTP__SMTP_PORT: ''
-#    AIRFLOW__SMTP__SMTP_MAIL_FROM: ''
+    AIRFLOW__SMTP__SMTP_HOST: 'smtp.gmail.com'
+    AIRFLOW__SMTP__SMTP_USER: ${SMTP_USER}
+    AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD}
+    AIRFLOW__SMTP__SMTP_PORT: '587'
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_MAIL_FROM}
   volumes:
     # AIRFLOW_PROJ_DIR 는 환경변수로 설정되어있지 않기 때문에 docker-compose.yaml 파일이 위치한 곳
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
@@ -93,6 +97,7 @@ x-airflow-common:
     postgres:
       condition: service_healthy
 
+# 컨테이너로 올릴 서비스 지정
 services:
   postgres:
     image: postgres:15
@@ -113,6 +118,7 @@ services:
 
   redis:
     image: redis:latest
+    # 컨테이너 환경 내에서 외부 컨테이너가 redis에 접근할떄 6379 포트로 접속하면 된다.
     expose:
       - 6379
     healthcheck:
@@ -124,6 +130,8 @@ services:
     restart: always
 
   airflow-webserver:
+    # 공통 지정 파라메터를 불러옴
+    # env, image, depends_on
     <<: *airflow-common
     command: webserver
     ports:
@@ -136,6 +144,9 @@ services:
       start_period: 30s
     restart: always
     depends_on:
+      # 동일한 부분을 한번 더 불러오면 덮어쓰게 된다.
+      # depends-on 은 컨테이너가 실행되는 순서에 대한 정의를 한다.
+      # db 컨테이너 실행 후 웹서버 실행(의존 관계)
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
@@ -306,6 +317,19 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+# 컨테이너와 연결하기 위한 볼륨 정보
 volumes:
+  # 새로 만든 볼륨의 이름
   postgres-db-volume: 
-    
+  # 확인 방법
+  # list : sudo docker volume ls
+  # detail : sudo docker volume inspect {volume_id}
+
+#networks:
+#  network_custom:
+#    driver: bridge
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.18.0.0/16 # 서브넷 개념 : 2^16 / 2^16 -2 | 할당 받을 IP 갯수
+#          gateway: 172.18.0.1
