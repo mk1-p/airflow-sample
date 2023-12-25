@@ -99,6 +99,22 @@ x-airflow-common:
 
 # 컨테이너로 올릴 서비스 지정
 services:
+
+  postgres-custom:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: custom
+      TZ: Asia/Seoul
+    ports:
+      - 10010:5432
+    volumes:
+      - ./data/custom:/var/lib/postgresql/data
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.3
+
   postgres:
     image: postgres:15
     environment:
@@ -108,13 +124,16 @@ services:
     ports:
       - 10009:5432
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./data/meta:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.4
 
   redis:
     image: redis:latest
@@ -128,6 +147,9 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.5
 
   airflow-webserver:
     # 공통 지정 파라메터를 불러옴
@@ -150,6 +172,9 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.6
 
   airflow-scheduler:
     <<: *airflow-common
@@ -165,6 +190,9 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.7
 
   airflow-worker:
     <<: *airflow-common
@@ -188,6 +216,9 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.8
 
   airflow-triggerer:
     <<: *airflow-common
@@ -203,6 +234,9 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.9
 
   airflow-init:
     <<: *airflow-common
@@ -281,6 +315,9 @@ services:
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    networks:
+      network_custom:
+        ipv4_address: 172.28.0.10
 
   airflow-cli:
     <<: *airflow-common
@@ -325,11 +362,11 @@ volumes:
   # list : sudo docker volume ls
   # detail : sudo docker volume inspect {volume_id}
 
-#networks:
-#  network_custom:
-#    driver: bridge
-#    ipam:
-#      driver: default
-#      config:
-#        - subnet: 172.18.0.0/16 # 서브넷 개념 : 2^16 / 2^16 -2 | 할당 받을 IP 갯수
-#          gateway: 172.18.0.1
+networks:
+  network_custom:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16 # 서브넷 개념 : 2^16 / 2^16 -2 | 할당 받을 IP 갯수
+          gateway: 172.28.0.1
